@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Deriv Chart Signal Analyzer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #374151;
+      --text-muted: #6b7280;
+      --accent-color: #2563eb;
+      --card-bg: #f9fafb;
+      --border-radius: 12px;
+      --shadow: 0 4px 12px rgba(0,0,0,0.05);
+      --transition-duration: 0.3s;
+      --max-width: 900px;
+      --spacing: 1.5rem;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      padding: var(--spacing);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      max-width: var(--max-width);
+      width: 100%;
+      margin-bottom: 3rem;
+      text-align: center;
+      user-select: none;
+    }
+
+    header h1 {
+      font-weight: 600;
+      font-size: 3rem;
+      margin-bottom: 0.25rem;
+      color: var(--accent-color);
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.125rem;
+    }
+
+    main {
+      max-width: var(--max-width);
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: 2rem 2rem 3rem 2rem;
+    }
+
+    .upload-section {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    label.upload-label {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background-color: var(--accent-color);
+      color: white;
+      font-weight: 600;
+      font-size: 1.125rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: background-color var(--transition-duration);
+      user-select: none;
+    }
+
+    label.upload-label:hover {
+      background-color: #1d4ed8;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .image-preview {
+      margin-top: 1.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      max-width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+      border: 1px solid #e5e7eb;
+    }
+
+    .analysis-result {
+      margin-top: 2rem;
+      border-radius: var(--border-radius);
+      background: white;
+      padding: 1.75rem 2rem;
+      box-shadow: var(--shadow);
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .result-label {
+      font-weight: 600;
+      color: var(--accent-color);
+      margin-bottom: 0.25rem;
+      flex-basis: 40%;
+    }
+
+    .result-value {
+      flex-basis: 55%;
+      color: var(--text-color);
+      font-weight: 500;
+      word-break: break-word;
+    }
+
+    .risk-steps {
+      margin-top: 1rem;
+      padding-left: 1rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    /* Micro animation on button in analysis */
+    .analyze-again-btn {
+      margin-top: 2rem;
+      padding: 0.75rem 1.5rem;
+      background-color: var(--accent-color);
+      color: white;
+      font-weight: 600;
+      font-size: 1.125rem;
+      border-radius: var(--border-radius);
+      border: none;
+      cursor: pointer;
+      transition: background-color var(--transition-duration), transform var(--transition-duration);
+      user-select: none;
+      display: inline-block;
+    }
+    .analyze-again-btn:hover,
+    .analyze-again-btn:focus {
+      background-color: #1d4ed8;
+      transform: scale(1.05);
+      outline: none;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 2rem 0;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      user-select: none;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Deriv Chart Signal Analyzer</h1>
+    <p>Upload a Deriv trading chart image to analyze and get trading signals</p>
+  </header>
+  <main>
+    <section class="upload-section">
+      <label for="chartUpload" class="upload-label" aria-label="Upload trading chart image">Upload Chart Image</label>
+      <input type="file" id="chartUpload" accept="image/*" aria-describedby="uploadDesc" />
+      <p id="uploadDesc" style="font-size:0.9rem; color: var(--text-muted); margin-top:0.5rem;">
+        Supported formats: JPG, PNG, GIF
+      </p>
+      <img id="imagePreview" class="image-preview" alt="Uploaded chart preview" style="display:none;" />
+    </section>
+    <section id="analysisSection" style="display:none;">
+      <h2 style="color: var(--accent-color); font-weight: 600; margin-bottom: 1rem;">Analysis Result</h2>
+      <div class="analysis-result" role="region" aria-live="polite" aria-atomic="true">
+        <div class="result-row">
+          <div class="result-label">Signal:</div>
+          <div class="result-value" id="signalValue">–</div>
+        </div>
+        <div class="result-row">
+          <div class="result-label">Confidence:</div>
+          <div class="result-value" id="confidenceValue">–</div>
+        </div>
+        <div class="result-row">
+          <div class="result-label">Suggested Trade Type:</div>
+          <div class="result-value" id="tradeTypeValue">–</div>
+        </div>
+        <div class="result-row">
+          <div class="result-label">Risk Management Tips:</div>
+        </div>
+        <ul class="risk-steps" id="riskStepsList">
+        </ul>
+      </div>
+      <button type="button" class="analyze-again-btn" id="resetBtn" aria-label="Analyze another chart">Analyze another chart</button>
+    </section>
+  </main>
+  <footer>
+    Made for Deriv Trading Platform | Signal analysis is approximate and for educational purposes only.
+  </footer>
+
+  <script>
+    const chartUploadInput = document.getElementById('chartUpload');
+    const imagePreview = document.getElementById('imagePreview');
+    const analysisSection = document.getElementById('analysisSection');
+    const signalValue = document.getElementById('signalValue');
+    const confidenceValue = document.getElementById('confidenceValue');
+    const tradeTypeValue = document.getElementById('tradeTypeValue');
+    const riskStepsList = document.getElementById('riskStepsList');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // Utility: mock patterns we pretend to detect
+    const mockPatterns = [
+      {
+        name: "Head and Shoulders",
+        signal: "Sell",
+        confidence: 82,
+        tradeType: "Ticks (Short Term)",
+        risks: [
+          "Set a tight stop loss just above right shoulder",
+          "Watch for volume confirmation before entry",
+          "Avoid trading during major news events"
+        ]
+      },
+      {
+        name: "Double Bottom",
+        signal: "Buy",
+        confidence: 75,
+        tradeType: "Minutes (Medium Term)",
+        risks: [
+          "Place stop loss below the support level",
+          "Confirm with bullish divergence in RSI",
+          "Be cautious of fake breakouts"
+        ]
+      },
+      {
+        name: "Ascending Triangle",
+        signal: "Buy",
+        confidence: 78,
+        tradeType: "Ticks (Short Term)",
+        risks: [
+          "Enter after breakout candle closes",
+          "Place stop loss below lower trendline",
+          "Avoid trading if volume is decreasing"
+        ]
+      },
+      {
+        name: "Descending Triangle",
+        signal: "Sell",
+        confidence: 80,
+        tradeType: "Ticks (Short Term)",
+        risks: [
+          "Enter after support break confirmation",
+          "Use trailing stop loss",
+          "Avoid entering late after a big drop"
+        ]
+      },
+      {
+        name: "Bullish Flag",
+        signal: "Buy",
+        confidence: 70,
+        tradeType: "Minutes (Short Term)",
+        risks: [
+          "Wait for breakout candle confirmation",
+          "Set stop loss below flag lower boundary",
+          "Do not enter if overall trend is bearish"
+        ]
+      },
+      {
+        name: "Bearish Flag",
+        signal: "Sell",
+        confidence: 72,
+        tradeType: "Minutes (Short Term)",
+        risks: [
+          "Confirm volume increase on breakdown",
+          "Use stop loss above flag upper boundary",
+          "Avoid trades during low liquidity"
+        ]
+      }
+    ];
+
+    // Fake analysis: chooses a pattern based on image filename or random if no match
+    function analyzeImage(file) {
+      return new Promise((resolve) => {
+        // simulate async analysis delay
+        setTimeout(() => {
+          const name = file.name.toLowerCase();
+          let selectedPattern = mockPatterns[Math.floor(Math.random() * mockPatterns.length)];
+
+          // Check if filename contains pattern name keywords for demo
+          for (let pattern of mockPatterns) {
+            if (name.includes(pattern.name.toLowerCase().replaceAll(" ", ""))) {
+              selectedPattern = pattern;
+              break;
+            }
+          }
+
+          resolve(selectedPattern);
+        }, 1300);
+      });
+    }
+
+    function displayAnalysis(pattern) {
+      signalValue.textContent = pattern.signal;
+      confidenceValue.textContent = pattern.confidence + "%";
+      tradeTypeValue.textContent = pattern.tradeType;
+      riskStepsList.innerHTML = "";
+      for (const tip of pattern.risks) {
+        const li = document.createElement("li");
+        li.textContent = tip;
+        riskStepsList.appendChild(li);
+      }
+      analysisSection.style.display = "block";
+    }
+
+    chartUploadInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Show image preview
+      const url = URL.createObjectURL(file);
+      imagePreview.src = url;
+      imagePreview.style.display = 'block';
+
+      // Hide previous analysis
+      analysisSection.style.display = "none";
+
+      // Analyze image
+      const pattern = await analyzeImage(file);
+
+      // Show results
+      displayAnalysis(pattern);
+
+      // Revoke object URL after load
+      imagePreview.onload = () => {
+        URL.revokeObjectURL(url);
+      }
+    });
+
+    resetBtn.addEventListener("click", () => {
+      chartUploadInput.value = "";
+      imagePreview.src = "";
+      imagePreview.style.display = "none";
+      analysisSection.style.display = "none";
+      chartUploadInput.focus();
+    });
+  </script>
+</body>
+</html>
+
