@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Key Access Redirector</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    :root {
+      --color-bg: #ffffff;
+      --color-text: #374151;
+      --color-gray: #6b7280;
+      --color-primary: #111827;
+      --color-accent: #2563eb;
+      --border-radius: 0.75rem;
+      --shadow-light: rgba(0, 0, 0, 0.05);
+      --transition: 0.3s ease;
+      --max-width: 600px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .container {
+      max-width: var(--max-width);
+      width: 100%;
+      background: var(--color-bg);
+      border-radius: var(--border-radius);
+      box-shadow: 0 8px 24px var(--shadow-light);
+      padding: 2.5rem 3rem 3rem;
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: 2.75rem;
+      margin: 0 0 0.5rem 0;
+      color: var(--color-primary);
+      user-select: none;
+    }
+
+    h2 {
+      font-weight: 600;
+      font-size: 1.25rem;
+      color: var(--color-gray);
+      margin-bottom: 2rem;
+      user-select: none;
+    }
+
+    nav {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    nav button {
+      background: none;
+      border: none;
+      padding: 0.75rem 0;
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--color-gray);
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+      transition: color var(--transition);
+    }
+    nav button:hover,
+    nav button:focus {
+      color: var(--color-accent);
+      outline: none;
+    }
+    nav button.active {
+      color: var(--color-primary);
+    }
+    nav button.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--color-accent);
+      border-radius: 1.5px 1.5px 0 0;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      max-width: 400px;
+      user-select: none;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: var(--color-primary);
+      user-select: text;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 1.5px solid #d1d5db;
+      border-radius: var(--border-radius);
+      transition: border-color var(--transition);
+      font-family: 'Inter', sans-serif;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+      outline: none;
+      border-color: var(--color-accent);
+      box-shadow: 0 0 8px var(--color-accent);
+    }
+
+    button[type="submit"],
+    button.button-primary {
+      background-color: var(--color-accent);
+      color: white;
+      border: none;
+      padding: 0.85rem 1.5rem;
+      font-weight: 600;
+      font-size: 1rem;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: background-color var(--transition), transform 0.2s ease;
+      user-select: none;
+      align-self: start;
+    }
+
+    button[type="submit"]:hover,
+    button.button-primary:hover {
+      background-color: #1e40af;
+      transform: scale(1.03);
+    }
+    button[type="submit"]:focus,
+    button.button-primary:focus {
+      outline: 3px solid #93c5fd;
+      outline-offset: 2px;
+    }
+
+    .message {
+      font-size: 0.95rem;
+      color: #dc2626; /* red */
+      user-select: none;
+      min-height: 1.25rem;
+    }
+
+    /* Key list table */
+    table {
+      border-collapse: separate;
+      border-spacing: 0 0.75rem;
+      width: 100%;
+      user-select: none;
+    }
+    th, td {
+      padding: 0.5rem 1rem;
+      font-weight: 500;
+      text-align: left;
+      color: var(--color-primary);
+    }
+    th {
+      font-size: 0.9rem;
+      user-select: none;
+    }
+    tr {
+      background: #f9fafb;
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 5px var(--shadow-light);
+      transition: background-color 0.2s ease;
+    }
+    tr:hover {
+      background-color: #e0e7ff;
+    }
+    td button {
+      background: transparent;
+      border: none;
+      color: #dc2626;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 0;
+      user-select: none;
+      transition: color 0.2s ease;
+    }
+    td button:hover {
+      color: #991b1b;
+    }
+
+    /* Info note */
+    .note {
+      font-size: 0.875rem;
+      color: var(--color-gray);
+      margin-top: 0.5rem;
+      user-select: none;
+    }
+
+    /* Hide sections */
+    .hidden {
+      display: none;
+    }
+
+    /* Admin password input */
+    .password-protect {
+      max-width: 320px;
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="container" role="main" aria-labelledby="main-title">
+    <h1 id="main-title">Key Access Redirector</h1>
+    <nav role="tablist" aria-label="Main navigation">
+      <button id="tab-keyentry" role="tab" aria-controls="panel-keyentry" aria-selected="true" class="active" tabindex="0">Enter Key</button>
+      <button id="tab-admin" role="tab" aria-controls="panel-admin" aria-selected="false" tabindex="-1">Admin Panel</button>
+    </nav>
+
+    <section id="panel-keyentry" role="tabpanel" aria-labelledby="tab-keyentry">
+      <h2>Enter your access key</h2>
+      <form id="key-entry-form" autocomplete="off" aria-describedby="key-entry-msg">
+        <label for="input-key">Access Key</label>
+        <input type="text" id="input-key" name="key" aria-required="true" autocomplete="off" spellcheck="false" />
+        <button type="submit">Go</button>
+        <p id="key-entry-msg" class="message" aria-live="polite"></p>
+      </form>
+      <p class="note">If your key is valid, you will be redirected to Google.</p>
+    </section>
+
+    <section id="panel-admin" role="tabpanel" aria-labelledby="tab-admin" class="hidden">
+      <h2>Admin Panel</h2>
+
+      <div class="password-protect">
+        <label for="admin-password">Admin Password</label>
+        <input type="password" id="admin-password" aria-required="true" autocomplete="off" />
+        <button id="admin-login-btn" class="button-primary" aria-describedby="admin-login-msg">Login</button>
+        <p id="admin-login-msg" class="message" aria-live="polite"></p>
+      </div>
+
+      <div id="admin-content" class="hidden" tabindex="0" aria-live="polite" aria-atomic="true">
+        <form id="key-create-form" autocomplete="off">
+          <label for="new-key">Create New Key</label>
+          <input
+            type="text"
+            id="new-key"
+            name="newKey"
+            aria-required="true"
+            placeholder="Enter new key"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button type="submit">Create Key</button>
+        </form>
+        <p id="create-key-msg" class="message" aria-live="polite"></p>
+
+        <h3>Existing Keys</h3>
+        <table aria-label="List of created keys">
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="keys-list"></tbody>
+        </table>
+        <p class="note">
+          Admin password is required to view and create keys. Keys are stored locally in your browser.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      // Constants
+      const ADMIN_PASSWORD = 'admin123'; // Basic admin password for demo; can be changed here
+
+      // Elements
+      const tabKeyEntry = document.getElementById('tab-keyentry');
+      const tabAdmin = document.getElementById('tab-admin');
+      const panelKeyEntry = document.getElementById('panel-keyentry');
+      const panelAdmin = document.getElementById('panel-admin');
+      const adminPasswordInput = document.getElementById('admin-password');
+      const adminLoginBtn = document.getElementById('admin-login-btn');
+      const adminLoginMsg = document.getElementById('admin-login-msg');
+      const adminContent = document.getElementById('admin-content');
+
+      const keyEntryForm = document.getElementById('key-entry-form');
+      const inputKey = document.getElementById('input-key');
+      const keyEntryMsg = document.getElementById('key-entry-msg');
+
+      const keyCreateForm = document.getElementById('key-create-form');
+      const newKeyInput = document.getElementById('new-key');
+      const createKeyMsg = document.getElementById('create-key-msg');
+      const keysList = document.getElementById('keys-list');
+
+      // State
+      let keys = [];
+      let adminLoggedIn = false;
+
+      // Load keys from localStorage
+      function loadKeys() {
+        const saved = localStorage.getItem('accessKeys');
+        if (saved) {
+          try {
+            keys = JSON.parse(saved);
+          } catch {
+            keys = [];
+          }
+        } else {
+          keys = [];
+        }
+      }
+
+      // Save keys to localStorage
+      function saveKeys() {
+        localStorage.setItem('accessKeys', JSON.stringify(keys));
+      }
+
+      // Render keys list in admin panel
+      function renderKeys() {
+        keysList.innerHTML = '';
+        if (keys.length === 0) {
+          keysList.innerHTML = '<tr><td colspan="2" style="color: var(--color-gray); font-style: italic;">No keys created yet.</td></tr>';
+          return;
+        }
+        keys.forEach((key) => {
+          const tr = document.createElement('tr');
+          const tdKey = document.createElement('td');
+          tdKey.textContent = key;
+          const tdActions = document.createElement('td');
+          const btnDelete = document.createElement('button');
+          btnDelete.setAttribute('aria-label', 'Delete key ' + key);
+          btnDelete.textContent = 'Delete';
+          btnDelete.addEventListener('click', () => {
+            if (confirm('Delete key "' + key + '"? This action cannot be undone.')) {
+              keys = keys.filter(k => k !== key);
+              saveKeys();
+              renderKeys();
+            }
+          });
+          tdActions.appendChild(btnDelete);
+          tr.appendChild(tdKey);
+          tr.appendChild(tdActions);
+          keysList.appendChild(tr);
+        });
+      }
+
+      // Admin login handler
+      function adminLogin() {
+        const entered = adminPasswordInput.value.trim();
+        if (entered === ADMIN_PASSWORD) {
+          adminLoggedIn = true;
+          adminLoginMsg.textContent = '';
+          adminPasswordInput.style.borderColor = '';
+          adminContent.classList.remove('hidden');
+          adminPasswordInput.disabled = true;
+          adminLoginBtn.disabled = true;
+
+          renderKeys();
+        } else {
+          adminLoginMsg.textContent = 'Incorrect password.';
+          adminPasswordInput.style.borderColor = '#dc2626'; // red
+          adminPasswordInput.focus();
+        }
+      }
+
+      // Switch to Key Entry tab
+      function showKeyEntryTab() {
+        tabKeyEntry.classList.add('active');
+        tabKeyEntry.setAttribute('aria-selected', 'true');
+        tabKeyEntry.tabIndex = 0;
+
+        tabAdmin.classList.remove('active');
+        tabAdmin.setAttribute('aria-selected', 'false');
+        tabAdmin.tabIndex = -1;
+
+        panelKeyEntry.classList.remove('hidden');
+        panelAdmin.classList.add('hidden');
+      }
+
+      // Switch to Admin tab
+      function showAdminTab() {
+        tabAdmin.classList.add('active');
+        tabAdmin.setAttribute('aria-selected', 'true');
+        tabAdmin.tabIndex = 0;
+
+        tabKeyEntry.classList.remove('active');
+        tabKeyEntry.setAttribute('aria-selected', 'false');
+        tabKeyEntry.tabIndex = -1;
+
+        panelKeyEntry.classList.add('hidden');
+        panelAdmin.classList.remove('hidden');
+
+        // Focus admin password input if not logged in
+        if (!adminLoggedIn) {
+          adminPasswordInput.focus();
+        }
+      }
+
+      // Event listeners for tabs
+      tabKeyEntry.addEventListener('click', showKeyEntryTab);
+      tabAdmin.addEventListener('click', showAdminTab);
+
+      // Key entry form submission
+      keyEntryForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const enteredKey = inputKey.value.trim();
+        keyEntryMsg.textContent = '';
+
+        if (!enteredKey) {
+          keyEntryMsg.textContent = 'Please enter a key.';
+          inputKey.focus();
+          return;
+        }
+        if (keys.includes(enteredKey)) {
+          keyEntryMsg.textContent = 'Key is valid! Redirecting...';
+          // Delay redirection for user to see message
+          setTimeout(() => {
+            window.location.href = 'https://www.google.com';
+          }, 1000);
+        } else {
+          keyEntryMsg.textContent = 'Invalid key. Please try again.';
+          inputKey.focus();
+        }
+      });
+
+      // Admin login button
+      adminLoginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        adminLogin();
+      });
+
+      // Admin create key form submission
+      keyCreateForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        createKeyMsg.textContent = '';
+        const newKey = newKeyInput.value.trim();
+
+        if (!newKey) {
+          createKeyMsg.textContent = 'Please enter a key to create.';
+          newKeyInput.focus();
+          return;
+        }
+        if (keys.includes(newKey)) {
+          createKeyMsg.textContent = 'Key already exists.';
+          newKeyInput.focus();
+          return;
+        }
+        keys.push(newKey);
+        saveKeys();
+        renderKeys();
+        createKeyMsg.style.color = 'green';
+        createKeyMsg.textContent = 'Key created successfully!';
+        newKeyInput.value = '';
+        newKeyInput.focus();
+
+        setTimeout(() => {
+          createKeyMsg.textContent = '';
+          createKeyMsg.style.color = '#dc2626';
+        }, 3000);
+      });
+
+      // Initialization
+      function init() {
+        loadKeys();
+        showKeyEntryTab();
+      }
+
+      // Keyboard accessibility for tabs
+      [tabKeyEntry, tabAdmin].forEach((tab) => {
+        tab.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            if (document.activeElement === tabKeyEntry) {
+              tabAdmin.focus();
+            } else {
+              tabKeyEntry.focus();
+            }
+          }
+          if (e.key === 'Home') {
+            e.preventDefault();
+            tabKeyEntry.focus();
+          }
+          if (e.key === 'End') {
+            e.preventDefault();
+            tabAdmin.focus();
+          }
+        });
+      });
+
+      init();
+    })();
+  </script>
+</body>
+</html>
+
